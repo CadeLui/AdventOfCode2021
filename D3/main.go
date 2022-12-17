@@ -27,26 +27,28 @@ func strToInt(str string) int {
 }
 
 func convertStringArrayToIntArray(stringArray []string) []int {
+	fixThisShit := stringArray
 	var intArray []int
-	for i := 0; i < len(stringArray); i++ {
-		intArray = append(intArray, strToInt(stringArray[i]))
+	for i := 0; i < len(fixThisShit); i++ {
+		intArray = append(intArray, strToInt(fixThisShit[i]))
 	}
 	return intArray
 }
 
 func common(numbersAsStr []string) []int {
+	listOfStrNums := numbersAsStr
 	var common []int
-	for col := 0; col < len(numbersAsStr[0]); col++ {
-		// [1, 0]
-		pair := []int{0, 0}
-		for row := 0; row < len(numbersAsStr); row++ {
-			if strToInt(string(numbersAsStr[row][col])) == 1 {
-				pair[0]++
+	for col := 0; col < len(listOfStrNums[0]); col++ {
+		zeroes := 0
+		ones := 1
+		for row := 0; row < len(listOfStrNums); row++ {
+			if strToInt(string(listOfStrNums[row][col])) == 1 {
+				ones++
 			} else {
-				pair[1]++
+				zeroes++
 			}
 		}
-		if pair[0] > pair[1] {
+		if ones > zeroes {
 			common = append(common, 1)
 		} else {
 			common = append(common, 0)
@@ -55,8 +57,85 @@ func common(numbersAsStr []string) []int {
 	return common
 }
 
-func commonButWeird(numbersAsStr[]string) []int {
-	var common []int
+func remove(s []string, i int) []string {
+    s[i] = s[len(s)-1]
+    return s[:len(s)-1]
+}
+
+
+func commonWithReduction(numbersAsStr[]string) []int {
+	common := numbersAsStr
+	for col := 0; col < len(common[0]); col++ {
+		zeroes := 0
+		ones := 0
+		for row := 0; row < len(common); row++ {
+			if strToInt(string(common[row][col])) == 1 {
+				ones++
+			} else {
+				zeroes++
+			}
+		}
+		if ones >= zeroes {
+			for row := 0; row < len(common); row++ {
+				if common[row][col] != '1' {
+					common = remove(common, row)
+					row--
+				}
+			}
+		} else {
+			for row := 0; row < len(common); row++ {
+				if common[row][col] != '0' {
+					common = remove(common, row)
+					row--
+				}
+			}
+		}
+	}
+	var intCommon []int
+	for col := 0; col < len(common[0]); col++ {
+		if common[0][col] == '1' { intCommon = append(intCommon, 1) }
+		if common[0][col] == '0' { intCommon = append(intCommon, 0) }
+	}
+
+	return intCommon
+}
+
+func uncommonWithReduction(numbersAsStr[]string) []int {
+	uncommon := numbersAsStr
+	for col := 0; col < len(uncommon[0]); col++ {
+		zeroes := 0
+		ones := 0
+		if len(uncommon) == 1 { break }
+		for row := 0; row < len(uncommon); row++ {
+			if strToInt(string(uncommon[row][col])) == 1 {
+				ones++
+			} else {
+				zeroes++
+			}
+		}
+		if ones >= zeroes {
+			for row := 0; row < len(uncommon); row++ {
+				if uncommon[row][col] != '0' {
+					uncommon = remove(uncommon, row)
+					row--
+				}
+			}
+		} else {
+			for row := 0; row < len(uncommon); row++ {
+				if uncommon[row][col] != '1' {
+					uncommon = remove(uncommon, row)
+					row--
+				}
+			}
+		}
+	}
+	var intUncommon []int
+	for col := 0; col < len(uncommon[0]); col++ {
+		if uncommon[0][col] == '1' { intUncommon = append(intUncommon, 1) }
+		if uncommon[0][col] == '0' { intUncommon = append(intUncommon, 0) }
+	}
+
+	return intUncommon
 }
 
 func invertBin(bin []int) []int {
@@ -82,7 +161,9 @@ func binToInt(bin []int) int {
 
 func main() {
 	lines := getFileLines("input")
+	lines2 := getFileLines("input")
 	common := common(lines)
 	inverse := invertBin(common)
-	fmt.Print(binToInt(common) * binToInt(inverse))
+	fmt.Println(binToInt(common) * binToInt(inverse))
+	fmt.Println(binToInt(commonWithReduction(lines)) * binToInt(uncommonWithReduction(lines2)))
 }
