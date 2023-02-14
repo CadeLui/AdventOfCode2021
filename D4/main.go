@@ -2,27 +2,20 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 )
 
 func getFileLines(filename string) []string {
-	data, error := os.ReadFile(filename)
-	if error != nil {
-		log.Fatal(error)
-	}
+	data, _ := os.ReadFile(filename)
 	dataArray := strings.Split(string(data), "\n")
 	return dataArray
 }
 
 func strToInt(str string) int {
 	str = strings.TrimSpace(str)
-	integer, err := strconv.Atoi((str))
-	if err != nil {
-		log.Fatal(err)
-	}
+	integer, _ := strconv.Atoi((str))
 	return integer
 }
 
