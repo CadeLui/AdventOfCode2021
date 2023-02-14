@@ -36,13 +36,12 @@ func convertStringArrayToIntArray(stringArray []string) []int {
 }
 
 func common(numbersAsStr []string) []int {
-	listOfStrNums := numbersAsStr
 	var common []int
-	for col := 0; col < len(listOfStrNums[0]); col++ {
+	for col := 0; col < len(numbersAsStr[0]); col++ {
 		zeroes := 0
 		ones := 1
-		for row := 0; row < len(listOfStrNums); row++ {
-			if strToInt(string(listOfStrNums[row][col])) == 1 {
+		for row := 0; row < len(numbersAsStr); row++ {
+			if strToInt(string(numbersAsStr[row][col])) == 1 {
 				ones++
 			} else {
 				zeroes++
@@ -61,7 +60,6 @@ func remove(s []string, i int) []string {
     s[i] = s[len(s)-1]
     return s[:len(s)-1]
 }
-
 
 func commonWithReduction(numbersAsStr[]string) []int {
 	common := numbersAsStr
@@ -160,10 +158,12 @@ func binToInt(bin []int) int {
 }
 
 func main() {
-	lines := getFileLines("input")
-	lines2 := getFileLines("input")
+	lines := getFileLines("example")
+	lines2 := getFileLines("example")
 	common := common(lines)
 	inverse := invertBin(common)
+	fmt.Println(lines)
 	fmt.Println(binToInt(common) * binToInt(inverse))
 	fmt.Println(binToInt(commonWithReduction(lines)) * binToInt(uncommonWithReduction(lines2)))
+	fmt.Println(lines)
 }
