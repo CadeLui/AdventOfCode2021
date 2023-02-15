@@ -20,10 +20,10 @@ func strToInt(str string) int {
 }
 
 func testWin(board [][]bool) bool {
-	for row := 0; row < len(board); row++ {
+	for _, row_data := range board {
 		hits := 0
-		for col := 0; col < len(board[0]); col++ {
-			if board[row][col] {
+		for _, data := range row_data {
+			if data {
 				hits += 1
 			}
 		}
@@ -46,9 +46,9 @@ func testWin(board [][]bool) bool {
 }
 
 func playNum(board [][]int, boolBoard [][]bool, space int) [][]bool {
-	for row := 0; row < len(board); row++ {
-		for col := 0; col < len(board[0]); col++ {
-			if board[row][col] == space {
+	for row, row_data := range board {
+		for col, data := range row_data {
+			if data == space {
 				boolBoard[row][col] = true
 			}
 		}
@@ -78,8 +78,8 @@ func grabBoards(lines []string) [][][]int {
 func convertInstructions(rawInstructions string) []int {
 	var instructions []int
 	translation := strings.Split(rawInstructions, ",")
-	for iter := 0; iter < len(translation); iter++ {
-		instructions = append(instructions, strToInt(translation[iter]))
+	for _, instruction := range translation {
+		instructions = append(instructions, strToInt(instruction))
 	}
 	return instructions
 }
@@ -98,43 +98,35 @@ func winner(boards [][][]int, instructions []int) [][]int {
 	for iter := 0; iter < len(boards); iter++ {
 		boolBoards = append(boolBoards, genBoolBoard())
 	}
-	for iter := 0; iter < len(instructions); iter++ {
-		for b := 0; b < len(boards); b++ {
-			boolBoards[b] = playNum(boards[b], boolBoards[b], instructions[iter])
-			if testWin(boolBoards[b]) {
-				return boards[b]
+	for _, instruction := range instructions {
+		for iter, board := range boards {
+			boolBoards[iter] = playNum(board, boolBoards[iter], instruction)
+			if testWin(boolBoards[iter]) {
+				return board
 			}
 		}
 	}
 	return nil
 }
 
-func winnerBool(boards [][][]int, instructions []int) [][]bool {
-	var boolBoards [][][]bool
-	for iter := 0; iter < len(boards); iter++ {
-		boolBoards = append(boolBoards, genBoolBoard())
+func boolGen(board [][]int, instructions []int) [][]bool {
+	boolBoard := genBoolBoard()
+	for _, instruction := range instructions {
+		boolBoard = playNum(board, boolBoard, instruction)
 	}
-	for iter := 0; iter < len(instructions); iter++ {
-		for b := 0; b < len(boards); b++ {
-			boolBoards[b] = playNum(boards[b], boolBoards[b], instructions[iter])
-			if testWin(boolBoards[b]) {
-				return boolBoards[b]
-			}
-		}
-	}
-	return nil
+	return boolBoard
 }
 
 func BoolArrayEquals(a [][]bool, b [][]bool) bool {
 	if len(a) != len(b) {
 		return false
 	}
-	for r := 0; r < len(a); r++ {
-		if len(a[r]) != len(b[r]) {
+	for row, row_data := range a {
+		if len(row_data) != len(b[row]) {
 			return false
 		}
-		for c := 0; c < len(a[0]); c++ {
-			if a[r][c] != b[r][c] {
+		for col, data := range row_data {
+			if data != b[row][col] {
 				return false
 			}
 		}
@@ -169,10 +161,10 @@ func getPlayedMoves(boards [][][]int, instructions []int) []int {
 	for iter := 0; iter < len(boards); iter++ {
 		boolBoards = append(boolBoards, genBoolBoard())
 	}
-	for iter := 0; iter < len(instructions); iter++ {
-		moves = append(moves, instructions[iter])
-		for b := 0; b < len(boards); b++ {
-			boolBoards[b] = playNum(boards[b], boolBoards[b], instructions[iter])
+	for _, instruction := range instructions {
+		moves = append(moves, instruction)
+		for iter, board := range boards {
+			boolBoards[iter] = playNum(board, boolBoards[iter], instruction)
 		}
 		if testIfAnyWin(boolBoards) {
 			return moves
@@ -224,31 +216,39 @@ func unmarkedMoves(board [][]int, boolBoard [][]bool) []int {
 	return moves
 }
 
-func main() {
-	lines := getFileLines("input")
-	// Convert the first line of moves into an int array
-	instructions := convertInstructions(lines[0])
-	// Get each game board and convert them to two dimensional arrays
-	// Then stuff each of those arrays into another array
-	boards := grabBoards(lines)
-
-	// Finds how many moves are played until a board wins
-	instructions = getPlayedMoves(boards, instructions)
-	// Finds the first winner from the condensed moves
-	win := winner(boards, instructions)
-	winBool := winnerBool(boards, instructions)
-	fmt.Println(win)
-	for _, line := range winBool {
-		fmt.Println(line)
-	}
-	// Shows which moves won the game
-	fmt.Println(unmarkedMoves(win, winBool))
-	fmt.Println(winningMoves(win, instructions))
-	unmarked := unmarkedMoves(win, winBool)
+func genFinalScore(win [][]int, instructions []int) int {
+	// Gets the moves that were played on the winning board
 	moves := winningMoves(win, instructions)
+	fmt.Println(win)
+	fmt.Println(moves)
+	// Gets the marked and unmarked spaces on the board
+	winnerBool := boolGen(win, moves)
+	fmt.Println(winnerBool)
+	// Gets which spaces on the board which haven't been marked
+	unmarked := unmarkedMoves(win, winnerBool)
+	// Calculates the final score
 	unmarkedSum := 0
 	for _, number := range unmarked {
 		unmarkedSum += number
 	}
-	fmt.Println(unmarkedSum * moves[len(moves)-1])
+	return unmarkedSum * moves[len(moves)-1]
+}
+
+func main() {
+	lines := getFileLines("input")
+	// Convert the first line of moves into an int array
+	instructions := convertInstructions(lines[0])
+
+	// Get each game board and convert them to two dimensional arrays
+	// Then stuff each of those arrays into another array
+	boards := grabBoards(lines)
+
+	// Reduces the instructions to those that won the game
+	// instructions = getPlayedMoves(boards, instructions)
+
+	// Gets the board that won the game
+	win := winner(boards, instructions)
+
+	fmt.Println(genFinalScore(win, instructions))
+	fmt.Println(instructions)
 }
